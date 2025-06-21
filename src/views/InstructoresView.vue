@@ -40,12 +40,21 @@
       class="elevation-1"
     >
       <template #item.disponibilidades="{ item }: { item: any }">
-        <ul v-if="item.disponibilidades.length">
-          <li v-for="(disp, i) in item.disponibilidades" :key="i">
-            {{ disp.diaSemana }}: {{ formatHora(disp.horaInicio) }} - {{ formatHora(disp.horaFin) }}
-          </li>
-        </ul>
-        <span v-else>No disponible</span>
+        <v-expansion-panels multiple elevation="0">
+          <v-expansion-panel>
+            <v-expansion-panel-title>
+              <span v-if="item.disponibilidades.length">Ver horarios</span>
+              <span v-else>No disponible</span>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text v-if="item.disponibilidades.length">
+              <ul class="pl-4">
+                <li v-for="(disp, i) in item.disponibilidades" :key="i">
+                  {{ disp.diaSemana }}: {{ formatHora(disp.horaInicio) }} - {{ formatHora(disp.horaFin) }}
+                </li>
+              </ul>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </template>
 
       <template #item.acciones="{ item }: { item: any }">
