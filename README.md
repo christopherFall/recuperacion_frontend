@@ -11,7 +11,7 @@ Learn more about the recommended Project Setup and IDE Support in the [Vue Docs 
 ```md
 # Frontend - Gestión de Instructores SENA
 
-Este proyecto implementa la interfaz web del sistema de gestión de especialistas, usando **Vue 3**, **Vite** y **Vuetify 3**.
+Este proyecto implementa la interfaz web del sistema de gestión de Instructores SENA, usando **Vue 3**, **Vite** y **Vuetify 3**.
 
 ## 🚀 Requisitos
 
