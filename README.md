@@ -1,55 +1,84 @@
-# Vue 3 + TypeScript + Vite
-
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
-
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
-
----
-
-## ✅ `README.md` — FRONTEND (`frontend-instructores`)
-
-```md
 # Frontend - Gestión de Instructores SENA
 
-Este proyecto implementa la interfaz web del sistema de gestión de Instructores SENA, usando **Vue 3**, **Vite** y **Vuetify 3**.
+Este es el frontend del sistema para gestionar instructores SENA. Permite registrar instructores, asignarles áreas, definir horarios semanales, y aplicar soft delete para manejo de inactivos. La interfaz está construida con Vue 3 y Vuetify.
 
-## 🚀 Requisitos
+## 🌐 Tecnologías
 
-- Node.js 18+
-- Navegador moderno (Chrome, Edge, etc.)
+- [Vue 3](https://vuejs.org/)
+- [Vuetify 3](https://vuetifyjs.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+- Fetch API
+- Vite
 
-## 📦 Instalación
+## ⚙️ Requisitos Previos
+
+- Node.js (v18 o superior)
+- npm o yarn
+- Backend corriendo (ver [backend](../backend/README.md))
+
+## 🚀 Instalación
+
+1. **Clona el repositorio:**
 
 ```bash
-git clone https://github.com/tu-usuario/recuperacion-frontend.git
-cd recuperacion-frontend
+git clone <url-del-repo>
+cd frontend-instructores
+Instala las dependencias:
+
+bash
+Copiar
+Editar
 npm install
-🧪 Ejecutar en desarrollo
+Configura variables de entorno:
+
+Crea el archivo .env en la raíz con esta variable (si es necesario):
+
+bash
+Copiar
+Editar
+VITE_BACKEND_URL=http://localhost:3333
+Asegúrate que esta URL coincida con la de tu backend.
+
+Inicia la app en modo desarrollo:
+
 bash
 Copiar
 Editar
 npm run dev
-Accede en: http://localhost:5173
+Abre el navegador en: http://localhost:5173
 
-🔗 Configuración de CORS
-Asegúrate de que el backend (http://localhost:3333) tenga habilitado CORS para el frontend (http://localhost:5173) en el archivo config/cors.ts.
-
-ts
+📁 Estructura del Proyecto
+csharp
 Copiar
 Editar
-origin: ['http://localhost:5173']
-🔧 Funcionalidades implementadas
-Tabla paginada de instructores con Vuetify
+├── src/
+│   ├── components/           # Componentes reutilizables
+│   ├── views/                # Vistas principales
+│   ├── services/             # Comunicación con API
+│   ├── router/               # Rutas del frontend
+│   ├── stores/               # Pinia (si se usa)
+│   └── App.vue / main.ts     # Entradas principales
+├── public/                   # Archivos estáticos
+├── vite.config.ts            # Configuración de Vite
+└── tsconfig.json             # Configuración TypeScript
+🧩 Funcionalidades
+📋 Lista paginada de instructores
 
-Formulario de creación/edición reutilizable
+➕ Crear instructor con nombre, cédula y área
 
-Gestión dinámica de disponibilidad horaria (con validación de traslapes)
+🕒 Asignación de horarios semanales (día, hora inicio/fin)
 
-Eliminación lógica (soft delete)
+✏️ Editar instructores existentes
 
-Vista de especialistas inactivos y restauración
+🗑️ Soft delete (inactivación)
 
-Validación de traslapes tanto en frontend como backend
+🔁 Restaurar instructores inactivos
+
+🧭 Gestión CRUD de áreas
+
+✅ Validaciones en formulario con Vuetify
+
+📦 Confirmación antes de guardar o eliminar
 
 🧑‍🎓 Autor
 Christopher David Ramírez Pérez
