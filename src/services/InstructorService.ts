@@ -67,4 +67,17 @@ export default class EspecialistaService {
     })
     return res.json()
     }
+
+    static async updateDisponibilidad(id: number, data: {
+      dia_semana: string
+      hora_inicio: string
+      hora_fin: string
+    }) {
+      const res = await fetch(`http://localhost:3333/disponibilidades/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+      return res.json()
+    }
 }

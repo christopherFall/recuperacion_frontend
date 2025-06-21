@@ -1,6 +1,15 @@
 <template>
   <div class="pa-4">
-    <h1 class="text-h5 mb-4">Instructores Inactivos</h1>
+    <div class="d-flex justify-space-between align-center mb-4">
+      <h1 class="text-h5">INSTRUCTORES INACTIVOS</h1>
+      <v-btn
+        color="primary"
+        prepend-icon="mdi-arrow-left"
+        @click="$router.push('/')"
+      >
+        Volver a Instructores
+      </v-btn>
+    </div>
 
     <v-data-table-server
       :headers="headers"
@@ -26,7 +35,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import EspecialistaService from '@/services/EspecialistaService'
+import { useRouter } from 'vue-router'
+import InstructorService from '@/services/InstructorService'
+
+const router = useRouter()
 
 const items = ref([])
 const total = ref(0)
@@ -43,7 +55,7 @@ const headers = [
 
 async function cargarDatos() {
   loading.value = true
-  const { data, meta } = await EspecialistaService.getInactivos()
+  const { data, meta } = await InstructorService.getInactivos()
   items.value = data
   total.value = meta.total
   loading.value = false
@@ -64,8 +76,8 @@ function mostrarSnackbar(texto: string, color = 'success') {
 
 async function restaurar(item: any) {
   try {
-    await EspecialistaService.restore(item.id)
-    mostrarSnackbar('Especialista restaurado correctamente', 'success')
+    await InstructorService.restore(item.id)
+    mostrarSnackbar('Instructor restaurado correctamente', 'success')
     await cargarDatos()
   } catch (error) {
     mostrarSnackbar('Error al restaurar', 'warning')

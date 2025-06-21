@@ -1,14 +1,22 @@
 <template>
   <div class="pa-4">
-    <h1 class="text-h5 mb-4">Gestión de Instructores</h1>
+    <!-- Contenedor centrado -->
+    <div class="text-center mb-6">
+      <h1 class="text-h5 mb-4">GESTIÓN DE INSTRUCTORES SENA</h1>
+      <div class="d-flex justify-center flex-wrap ga-2">
+        <v-btn color="primary" @click="abrirFormulario">
+          Crear Instructor
+        </v-btn>
 
-    <v-btn color="primary" class="mb-4" @click="abrirFormulario">
-      Crear Profesor
-    </v-btn>
+        <v-btn color="success" @click="abrirDialogoAreas">
+          Gestionar Áreas
+        </v-btn>
 
-    <v-btn color="secondary" class="mb-4 ml-2" @click="router.push('/especialistas-inactivos')">
-      Ver Inactivos
-    </v-btn>
+        <v-btn color="secondary" @click="router.push('/especialistas-inactivos')">
+          Ver Inactivos
+        </v-btn>
+      </div>
+    </div>
 
     <!-- Formulario deslizante -->
     <v-slide-y-transition>
@@ -70,14 +78,30 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="dialogAreas" max-width="800">
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Gestión de Áreas</span>
+          <v-btn icon @click="dialogAreas = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-divider />
+        <v-card-text>
+          <SettingAreaView />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import EspecialistaService from '@/services/EspecialistaService'
+import InstructorService from '@/services/InstructorService'
 import FormEspecialista from '@/components/FormInstructor.vue'
+import SettingAreaView from '@/views/AreasView.vue'
 
 const router = useRouter()
 const items = ref([])
@@ -85,6 +109,7 @@ const total = ref(0)
 const loading = ref(false)
 const page = ref(1)
 const itemsPerPage = ref(5)
+const dialogAreas = ref(false)
 
 const mostrarFormulario = ref(false)
 const modoFormulario = ref<'crear' | 'editar'>('crear')
@@ -100,7 +125,7 @@ const headers = [
 
 async function cargarDatos() {
   loading.value = true
-  const { data, meta } = await EspecialistaService.getAll({
+  const { data, meta } = await InstructorService.getAll({
     page: page.value,
     limit: itemsPerPage.value,
   })
@@ -139,8 +164,8 @@ function alGuardar() {
   cargarDatos()
   mostrarSnackbar(
     modoFormulario.value === 'crear'
-      ? 'Especialista creado correctamente'
-      : 'Especialista actualizado correctamente'
+      ? 'Instructor creado correctamente'
+      : 'Instructor actualizado correctamente'
   )
 }
 
@@ -156,8 +181,8 @@ async function eliminar() {
   if (!especialistaAEliminar.value?.id) return
 
   try {
-    await EspecialistaService.delete(especialistaAEliminar.value.id)
-    mostrarSnackbar('Especialista eliminado correctamente', 'error')
+    await InstructorService.delete(especialistaAEliminar.value.id)
+    mostrarSnackbar('Instructor eliminado correctamente', 'error')
     await cargarDatos()
   } catch (error) {
     mostrarSnackbar('Error al eliminar', 'warning')
@@ -176,5 +201,9 @@ function formatHora(hora: string) {
     minute: '2-digit',
     hour12: true,
   })
+}
+
+function abrirDialogoAreas() {
+  dialogAreas.value = true
 }
 </script>

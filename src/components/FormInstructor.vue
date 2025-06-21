@@ -1,55 +1,85 @@
 <template>
-  <v-form @submit.prevent="submit">
-    <v-text-field
-      v-model="form.nombre_completo"
-      label="Nombre completo"
-      required
-    />
-    <v-select
-      v-model="form.especialidad_id"
-      :items="especialidades"
-      item-title="nombre"
-      item-value="id"
-      label="Área"
-      required
-    />
-    <v-text-field
-      v-model="form.registro_profesional"
-      label="Número de Cedula"
-      required
-    />
-
-    <h3 class="mt-4 mb-2">Clases semanales</h3>
-    <div
-      v-for="(d, index) in form.disponibilidades"
-      :key="index"
-      class="d-flex align-center ga-2 mb-2"
-    >
-      <v-select
-        v-model="d.dia_semana"
-        :items="dias"
-        label="Día"
-        class="flex-1"
-        required
+  <div class="form-wrapper">
+    <v-form @submit.prevent="submit" v-model="formIsValid" ref="formRef">
+      <v-text-field
+        v-model="form.nombre_completo"
+        label="Nombre completo"
+        :rules="[rules.required, rules.minLengthName]"
+        dense
+        hide-details="auto"
       />
-      <v-text-field v-model="d.hora_inicio" type="time" label="Hora inicio" />
-      <v-text-field v-model="d.hora_fin" type="time" label="Hora fin" />
-      <v-btn icon @click="form.disponibilidades.splice(index, 1)">
-        <v-icon>mdi-delete</v-icon>
-      </v-btn>
-    </div>
 
-    <div class="d-flex ga-2 mt-4">
-      <v-btn variant="tonal" @click="agregarDisponibilidad">Agregar horario</v-btn>
-      <v-btn type="submit" color="primary">Guardar</v-btn>
-      <v-btn @click="emit('cancelar')">Cancelar</v-btn>
-    </div>
-  </v-form>
+      <v-select
+        v-model="form.especialidad_id"
+        :items="especialidades"
+        item-title="nombre"
+        item-value="id"
+        label="Área"
+        :rules="[rules.required]"
+        dense
+        hide-details="auto"
+      />
+
+      <v-text-field
+        v-model="form.registro_profesional"
+        label="Número de Cédula"
+        :rules="[rules.required, rules.minLengthCedula, rules.maxLengthCedula]"
+        dense
+        hide-details="auto"
+      />
+
+      <h3 class="mt-4 mb-2">CLASES SEMANALES (Agregar horario semanal)</h3>
+      <div
+        v-for="(d, index) in form.disponibilidades"
+        :key="index"
+        class="d-flex align-center ga-2 mb-2"
+      >
+        <v-select
+          v-model="d.dia_semana"
+          :items="dias"
+          label="Día"
+          class="flex-1"
+          dense
+          hide-details="auto"
+        />
+        <v-text-field
+          v-model="d.hora_inicio"
+          type="time"
+          label="Hora inicio"
+          dense
+          hide-details="auto"
+        />
+        <v-text-field
+          v-model="d.hora_fin"
+          type="time"
+          label="Hora fin"
+          dense
+          hide-details="auto"
+        />
+        <v-btn icon @click="form.disponibilidades.splice(index, 1)">
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
+      </div>
+
+      <div class="d-flex ga-2 mt-4 justify-center">
+        <v-btn variant="tonal" @click="agregarDisponibilidad">Agregar horario</v-btn>
+        <v-btn type="submit" color="primary">Guardar</v-btn>
+        <v-btn @click="emit('cancelar')">Cancelar</v-btn>
+      </div>
+    </v-form>
+  </div>
 </template>
+
+<style scoped>
+.form-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+}
+</style>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import EspecialistaService from '@/services/EspecialistaService'
+import EspecialistaService from '@/services/InstructorService'
 import EspecialidadService from '@/services/EspecialidadService'
 
 const props = defineProps<{
@@ -70,6 +100,16 @@ const form = ref({
   disponibilidades: [],
 })
 
+const formIsValid = ref(false)
+const formRef = ref()
+
+const rules = {
+  required: (v: any) => !!v || 'Este campo es obligatorio',
+  minLengthName: (v: string) => (v?.length >= 3) || 'Mínimo 3 caracteres',
+  minLengthCedula: (v: string) => (v?.length >= 9) || 'Mínimo 9 caracteres',
+  maxLengthCedula: (v: string) => (v?.length <= 10) || 'Máximo 10 caracteres',
+}
+
 const dias = [
   'Lunes',
   'Martes',
@@ -83,11 +123,13 @@ const dias = [
 const especialidades = ref([])
 
 onMounted(async () => {
-  const data = await EspecialidadService.getAll()
-  especialidades.value = data
+  const response = await EspecialidadService.getAll()
+  especialidades.value = response.data || []
 })
 
 // Llenar el form al editar
+const oldDisponibilidades = ref<any[]>([])
+
 watch(
   () => props.initialData,
   (newVal) => {
@@ -98,11 +140,15 @@ watch(
         especialidad_id: newVal.especialidadId,
         registro_profesional: newVal.registroProfesional,
         disponibilidades: newVal.disponibilidades?.map((d: any) => ({
+          id: d.id,
           dia_semana: d.diaSemana,
           hora_inicio: d.horaInicio,
           hora_fin: d.horaFin,
         })) ?? [],
       }
+
+      // Clonamos para detectar cambios
+      oldDisponibilidades.value = JSON.parse(JSON.stringify(form.value.disponibilidades))
     }
   },
   { immediate: true }
@@ -116,7 +162,6 @@ function agregarDisponibilidad() {
   })
 }
 
-// 🔥 Validación de traslapes frontend
 function tieneTraslapes(disponibilidades: any[]): boolean {
   const porDia: Record<string, { inicio: string; fin: string }[]> = {}
 
@@ -142,37 +187,65 @@ function tieneTraslapes(disponibilidades: any[]): boolean {
 }
 
 async function submit() {
+  const formValid = await formRef.value?.validate()
+  if (!formValid.valid) return
+
   if (tieneTraslapes(form.value.disponibilidades)) {
-    alert('Hay horarios traslapados en la disponibilidad. Revisa los bloques de tiempo.')
+    alert('Hay horarios traslapados en la disponibilidad.')
     return
   }
 
   if (props.mode === 'crear') {
-    await EspecialistaService.create(form.value)
-  } else {
-    if (!form.value.id) {
-      console.error('ID no definido para actualización')
-      return
+    const { id } = await EspecialistaService.create(form.value)
+    for (const d of form.value.disponibilidades) {
+      await EspecialistaService.createDisponibilidad({
+        especialista_id: id,
+        dia_semana: d.dia_semana,
+        hora_inicio: d.hora_inicio,
+        hora_fin: d.hora_fin,
+      })
     }
-
-    await EspecialistaService.update(form.value.id, {
+  } else {
+    const id = form.value.id
+    await EspecialistaService.update(id, {
       nombre_completo: form.value.nombre_completo,
       especialidad_id: form.value.especialidad_id,
       registro_profesional: form.value.registro_profesional,
     })
 
-    const especialistaId = form.value.id
-    const old = await EspecialistaService.getById(especialistaId)
-    for (const d of old.disponibilidades) {
+    const nuevas = form.value.disponibilidades
+    const antiguas = oldDisponibilidades.value
+
+    const nuevasSinId = nuevas.filter((d) => !d.id)
+    const editadas = nuevas.filter(
+      (d) =>
+        d.id &&
+        antiguas.some(
+          (o) =>
+            o.id === d.id &&
+            (o.dia_semana !== d.dia_semana || o.hora_inicio !== d.hora_inicio || o.hora_fin !== d.hora_fin)
+        )
+    )
+    const eliminadas = antiguas.filter((o) => !nuevas.some((n) => n.id === o.id))
+
+    for (const d of eliminadas) {
       await EspecialistaService.deleteDisponibilidad(d.id)
     }
 
-    for (const nueva of form.value.disponibilidades) {
+    for (const d of editadas) {
+      await EspecialistaService.updateDisponibilidad(d.id, {
+        dia_semana: d.dia_semana,
+        hora_inicio: d.hora_inicio,
+        hora_fin: d.hora_fin,
+      })
+    }
+
+    for (const d of nuevasSinId) {
       await EspecialistaService.createDisponibilidad({
-        especialista_id: especialistaId,
-        dia_semana: nueva.dia_semana,
-        hora_inicio: nueva.hora_inicio,
-        hora_fin: nueva.hora_fin,
+        especialista_id: id,
+        dia_semana: d.dia_semana,
+        hora_inicio: d.hora_inicio,
+        hora_fin: d.hora_fin,
       })
     }
   }
